@@ -5,7 +5,7 @@ var fling = window.fling || {};
 (function() {
   'use strict';
 
-  FlingOffice.PROTOCOL = 'urn:x-cast:com.infthink.cast.demo.office';
+  FlingOffice.PROTOCOL = 'urn:flint:com.infthink.demo.office';
 
   /**
    * Creates a FlingOffice object.
@@ -22,7 +22,7 @@ var fling = window.fling || {};
 
     this.receiverDaemon = new ReceiverManagerWrapper("~flingoffice");
 
-    var channel = this.receiverDaemon.createMessageBus("urn:x-cast:com.infthink.cast.demo.office");
+    var channel = this.receiverDaemon.createMessageBus("urn:flint:com.infthink.demo.office");
 
     //start Receiver Daemon
     this.receiverDaemon.open();

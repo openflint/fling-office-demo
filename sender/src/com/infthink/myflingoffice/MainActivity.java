@@ -13,15 +13,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import tv.matchstick.fling.ApplicationMetadata;
-import tv.matchstick.fling.ConnectionResult;
-import tv.matchstick.fling.Fling;
-import tv.matchstick.fling.Fling.ApplicationConnectionResult;
-import tv.matchstick.fling.FlingDevice;
-import tv.matchstick.fling.FlingManager;
-import tv.matchstick.fling.FlingMediaControlIntent;
-import tv.matchstick.fling.ResultCallback;
-import tv.matchstick.fling.Status;
+import tv.matchstick.flint.ApplicationMetadata;
+import tv.matchstick.flint.ConnectionResult;
+import tv.matchstick.flint.Flint;
+import tv.matchstick.flint.Flint.ApplicationConnectionResult;
+import tv.matchstick.flint.FlintDevice;
+import tv.matchstick.flint.FlintManager;
+import tv.matchstick.flint.FlintMediaControlIntent;
+import tv.matchstick.flint.ResultCallback;
+import tv.matchstick.flint.Status;
 import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -71,15 +71,14 @@ public class MainActivity extends ActionBarActivity {
     private File mDocFile;
     private File mPdfFile;
 
-    private FlingDevice mSelectedDevice;
-    private FlingManager mApiClient;
-    private Fling.Listener mFlingListener;
+    private FlintDevice mSelectedDevice;
+    private FlintManager mApiClient;
+    private Flint.Listener mFlingListener;
     private ConnectionCallbacks mConnectionCallbacks;
-    private ConnectionFailedListener mConnectionFailedListener;
     private MediaRouter mMediaRouter;
     private MediaRouteSelector mMediaRouteSelector;
     private MediaRouter.Callback mMediaRouterCallback;
-    private FlingOfficeChannel mOfficeChannel;
+    private FlintOfficeChannel mOfficeChannel;
 
     private View mCastView;
 
@@ -112,20 +111,19 @@ public class MainActivity extends ActionBarActivity {
         mContext = this;
 
         String APPLICATION_ID = "~flingoffice";
-        Fling.FlingApi.setApplicationId(APPLICATION_ID);
+        Flint.FlintApi.setApplicationId(APPLICATION_ID);
 
-        mOfficeChannel = new FlingOfficeChannel();
+        mOfficeChannel = new FlintOfficeChannel();
 
         mMediaRouter = MediaRouter.getInstance(getApplicationContext());
         mMediaRouteSelector = new MediaRouteSelector.Builder()
                 .addControlCategory(
-                        FlingMediaControlIntent
-                                .categoryForFling(APPLICATION_ID)).build();
+                        FlintMediaControlIntent
+                                .categoryForFlint(APPLICATION_ID)).build();
 
         mMediaRouterCallback = new MediaRouterCallback();
-        mFlingListener = new FlingListener();
+        mFlingListener = new FlintListener();
         mConnectionCallbacks = new ConnectionCallbacks();
-        mConnectionFailedListener = new ConnectionFailedListener();
 
         Intent intent = getIntent();
 
@@ -265,7 +263,7 @@ public class MainActivity extends ActionBarActivity {
             return;
         }
 
-        Fling.FlingApi.stopApplication(mApiClient).setResultCallback(
+        Flint.FlintApi.stopApplication(mApiClient).setResultCallback(
                 new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status result) {
@@ -276,7 +274,7 @@ public class MainActivity extends ActionBarActivity {
                 });
     }
 
-    private void setSelectedDevice(FlingDevice device) {
+    private void setSelectedDevice(FlintDevice device) {
         Log.d(TAG, "setSelectedDevice: " + device);
         mSelectedDevice = device;
 
@@ -304,12 +302,11 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private void connectApiClient() {
-        Fling.FlingOptions apiOptions = Fling.FlingOptions.builder(
+        Flint.FlintOptions apiOptions = Flint.FlintOptions.builder(
                 mSelectedDevice, mFlingListener).build();
-        mApiClient = new FlingManager.Builder(this)
-                .addApi(Fling.API, apiOptions)
+        mApiClient = new FlintManager.Builder(this)
+                .addApi(Flint.API, apiOptions)
                 .addConnectionCallbacks(mConnectionCallbacks)
-                .addOnConnectionFailedListener(mConnectionFailedListener)
                 .build();
         mApiClient.connect();
     }
@@ -336,7 +333,7 @@ public class MainActivity extends ActionBarActivity {
             return;
         }
 
-        FlingDevice device = FlingDevice.getFromBundle(route.getExtras());
+        FlintDevice device = FlintDevice.getFromBundle(route.getExtras());
         setSelectedDevice(device);
     }
 
@@ -350,7 +347,7 @@ public class MainActivity extends ActionBarActivity {
         setSelectedDevice(null);
     }
 
-    private class FlingListener extends Fling.Listener {
+    private class FlintListener extends Flint.Listener {
         @Override
         public void onApplicationDisconnected(int statusCode) {
             Log.d(TAG, "Cast.Listener.onApplicationDisconnected: " + statusCode);
@@ -363,7 +360,7 @@ public class MainActivity extends ActionBarActivity {
             }
 
             try {
-                Fling.FlingApi.removeMessageReceivedCallbacks(mApiClient,
+                Flint.FlintApi.removeMessageReceivedCallbacks(mApiClient,
                         mOfficeChannel.getNamespace());
             } catch (IOException e) {
                 Log.w(TAG, "Exception while launching application", e);
@@ -372,7 +369,7 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private class ConnectionCallbacks implements
-            FlingManager.ConnectionCallbacks {
+            FlintManager.ConnectionCallbacks {
         @Override
         public void onConnectionSuspended(int cause) {
             Log.d(TAG, "ConnectionCallbacks.onConnectionSuspended");
@@ -381,13 +378,10 @@ public class MainActivity extends ActionBarActivity {
         @Override
         public void onConnected(Bundle connectionHint) {
             Log.d(TAG, "ConnectionCallbacks.onConnected");
-            Fling.FlingApi.launchApplication(mApiClient, APP_ID)
+            Flint.FlintApi.launchApplication(mApiClient, APP_ID)
                     .setResultCallback(new ConnectionResultCallback());
         }
-    }
-
-    private class ConnectionFailedListener implements
-            FlingManager.OnConnectionFailedListener {
+        
         @Override
         public void onConnectionFailed(ConnectionResult result) {
             Log.d(TAG, "ConnectionFailedListener.onConnectionFailed");
@@ -405,7 +399,7 @@ public class MainActivity extends ActionBarActivity {
             if (status.isSuccess()) {
                 Log.d(TAG, "ConnectionResultCallback: " + appMetaData.getData());
                 try {
-                    Fling.FlingApi.setMessageReceivedCallbacks(mApiClient,
+                    Flint.FlintApi.setMessageReceivedCallbacks(mApiClient,
                             mOfficeChannel.getNamespace(), mOfficeChannel);
 
                     String path = "http://" + mIpAddress + ":" + DEFAULT_PORT
@@ -426,7 +420,7 @@ public class MainActivity extends ActionBarActivity {
     /**
      * An extension of the GameChannel specifically for the Office game.
      */
-    private class FlingOfficeChannel extends OfficeChannel {
+    private class FlintOfficeChannel extends OfficeChannel {
     }
 
     private void sendMessage(final int keyCode) {

@@ -3,17 +3,17 @@ package com.infthink.myflingoffice;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import tv.matchstick.fling.Fling;
-import tv.matchstick.fling.FlingDevice;
-import tv.matchstick.fling.FlingManager;
-import tv.matchstick.fling.ResultCallback;
-import tv.matchstick.fling.Status;
+import tv.matchstick.flint.Flint;
+import tv.matchstick.flint.FlintDevice;
+import tv.matchstick.flint.FlintManager;
+import tv.matchstick.flint.ResultCallback;
+import tv.matchstick.flint.Status;
 import android.util.Log;
 
-public abstract class OfficeChannel implements Fling.MessageReceivedCallback {
+public abstract class OfficeChannel implements Flint.MessageReceivedCallback {
     private static final String TAG = OfficeChannel.class.getSimpleName();
 
-    private static final String OFFICE_NAMESPACE = "urn:x-cast:com.infthink.cast.demo.office";
+    private static final String OFFICE_NAMESPACE = "urn:flint:com.infthink.demo.office";
 
     // Commands
     private static final String KEY_COMMAND = "command";
@@ -34,7 +34,7 @@ public abstract class OfficeChannel implements Fling.MessageReceivedCallback {
         return OFFICE_NAMESPACE;
     }
 
-    public final void show(FlingManager apiClient, String filePath) {
+    public final void show(FlintManager apiClient, String filePath) {
         try {
             Log.d(TAG, "show: " + filePath);
             JSONObject payload = new JSONObject();
@@ -46,7 +46,7 @@ public abstract class OfficeChannel implements Fling.MessageReceivedCallback {
         }
     }
 
-    public final void act(FlingManager apiClient, final int cmd) {
+    public final void act(FlintManager apiClient, final int cmd) {
         Log.d(TAG, "act: cmd:" + cmd);
         try {
             JSONObject payload = new JSONObject();
@@ -61,7 +61,7 @@ public abstract class OfficeChannel implements Fling.MessageReceivedCallback {
     /**
      * Sends a command to leave the current game.
      */
-    public final void leave(FlingManager apiClient) {
+    public final void leave(FlintManager apiClient) {
         try {
             Log.d(TAG, "leave");
             JSONObject payload = new JSONObject();
@@ -73,15 +73,15 @@ public abstract class OfficeChannel implements Fling.MessageReceivedCallback {
     }
 
     @Override
-    public void onMessageReceived(FlingDevice flingDevice, String namespace,
+    public void onMessageReceived(FlintDevice flingDevice, String namespace,
             String message) {
         Log.d(TAG, "onTextMessageReceived: " + message);
 
     }
 
-    private final void sendMessage(FlingManager apiClient, String message) {
+    private final void sendMessage(FlintManager apiClient, String message) {
         Log.d(TAG, "Sending message: (ns=" + OFFICE_NAMESPACE + ") " + message);
-        Fling.FlingApi.sendMessage(apiClient, OFFICE_NAMESPACE, message)
+        Flint.FlintApi.sendMessage(apiClient, OFFICE_NAMESPACE, message)
                 .setResultCallback(new SendMessageResultCallback(message));
     }
 
