@@ -17,23 +17,22 @@ var fling = window.fling || {};
 
     this.mBoard = board;
 
-
     console.log('********FlingOffice********');
 
-    this.receiverDaemon = new ReceiverManagerWrapper("~flingoffice");
+    this.receiverDaemon = new FlintReceiverManager("~flingoffice");
 
     var channel = this.receiverDaemon.createMessageBus("urn:flint:com.infthink.demo.office");
-
-    //start Receiver Daemon
-    this.receiverDaemon.open();
 
      /*
       * Create MessageChannel Obejct
       **/
-    channel.on("message", function(senderId, message) {
+    channel.on("message", function(message, senderId) {
         var data = JSON.parse(message);
-        ("onMessage" in self)&&self.onMessage(senderId, data);
+        ("onMessage" in self)&&self.onMessage(data, senderId);
     });
+
+    //start Receiver Daemon
+    this.receiverDaemon.open();
   }
 
   // Adds event listening functions to FlingOffice.prototype.
@@ -69,7 +68,7 @@ var fling = window.fling || {};
      * choose function to call based on them.
      * @param {event} event the event to be processed.
      */
-    onMessage: function(senderId, message) {
+    onMessage: function(message, senderId) {
         console.log('********onMessage:' + message + " senderId:" + senderId);
 
         if (message.command == 'show') {
